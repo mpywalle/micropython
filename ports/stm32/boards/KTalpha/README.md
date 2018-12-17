@@ -25,38 +25,37 @@ KT device modules
 
 ### Temperature sensor module
 
-######Constructors:
+Constructors:
 class Sensor.TP()
-	Create a temperature sensor object. Default device address is 0x50
+    Create a temperature sensor object. Default device address is 0x50
 
-######Methods:
+Methods:
 TP.get_temp()
-	Get the degree of temperature from temperature sensor device. return
-	temperature value with string type.
+    Get the degree of temperature from temperature sensor device. return
+    temperature value with string type.
 
 TP.get_devID
-	Get the device ID of temperature sensor. return temperature sensor device
-	ID with string type.
+    Get the device ID of temperature sensor. return temperature sensor device
+    ID with string type.
 
 
-### Flashing the Firmware with OpenOCD
+### pyb LED module
 
-
-######Constructors:
+Constructors:
 class pyb.LED(id)
-	Create an LED object associated with the given LED:
-		id is the LED number, 1 - green, 2 - blue, 3 - red
+    Create an LED object associated with the given LED:
+         id is the LED number, 1 - green, 2 - blue, 3 - red
 
-######Methods:
+Methods:
 LED.off()
-	Turn the LED off.
+    Turn the LED off.
 
 LED.on()
-	Turn the LED on, to maximum intensity.
+    Turn the LED on, to maximum intensity.
 
 LED.toggle()
-	Toggle the LED between on (maximum intensity) and off. If the LED is at
-	 non-zero intensity then it is considered “on” and toggle will turn it off.
+    Toggle the LED between on (maximum intensity) and off. If the LED is at
+    non-zero intensity then it is considered “on” and toggle will turn it off.
 
 
 Example
