@@ -68,6 +68,7 @@ Create one thread to get temperature with one second interval.
 	import time
 	import _thread
 	from Sensor import TP
+    from Driver import DMotor
 	
 	def led(id, dt):
 		while 1:
@@ -82,9 +83,17 @@ Create one thread to get temperature with one second interval.
 			time.sleep_ms(dt)
 			print(cnt, val)
 			cnt = cnt + 1
+	def run_motor(n, dt):
+		motor = DMotor()
+		while 1:
+			val = motor.set_speed(40, 40)
+			time.sleep_ms(dt)
+			val = motor.set_speed(-40, -40)
+			time.sleep_ms(dt)
 
 	_thread.start_new_thread(led, (1, 1000))
 	_thread.start_new_thread(led, (2, 1000))
 	_thread.start_new_thread(led, (3, 1000))
 	_thread.start_new_thread(real_time_temp, (1, 1000))
+	_thread.start_new_thread(run_motor, (1, 1000))
 
