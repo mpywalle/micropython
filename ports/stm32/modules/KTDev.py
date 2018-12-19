@@ -40,3 +40,6 @@ class i2cDev():
         self.mem_read = self.mem_read + 1
         return data
 
+    def get_devID(self):
+        deviceID = self.i2cDev_mem_read(0x00, 4)
+        return deviceID.strip()

@@ -15,7 +15,7 @@ class TP(i2cDev):
         degree = super(TP, self).i2cDev_mem_read(0x20, 4)
         return degree.strip()
 
-    def get_devID(self):
-        deviceID = super(TP, self).i2cDev_mem_read(0x00, 4)
-        return deviceID.strip()
+#    def get_devID(self):
+#        deviceID = super(TP, self).i2cDev_mem_read(0x00, 4)
+#        return deviceID.strip()
 
