@@ -26,7 +26,7 @@ fast version of the STM32F7.
 #### Constructors:
 
 .. class:: Sensor.TP()
-	Create a temperature sensor object. Default device address is 0x50
+		Create a temperature sensor object. Default device address is 0x50
 
 #### Methods:
 
