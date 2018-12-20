@@ -114,9 +114,9 @@ Create one thread to drive double-motor with one second interval.
 	def run_motor(n, dt):
 		motor = DMotor()
 		while 1:
-			val = motor.set_speed(40, 40)
+			val = motor.set_speed(40, 1, 40, 1)
 			time.sleep_ms(dt)
-			val = motor.set_speed(-40, -40)
+			val = motor.set_speed(40, 2, 40, 2)
 			time.sleep_ms(dt)
 
 	_thread.start_new_thread(led, (1, 1000))
