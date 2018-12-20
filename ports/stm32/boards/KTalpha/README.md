@@ -21,14 +21,18 @@ fast version of the STM32F7.
 
 ## KT device modules
 
-### Temperature sensor module
+Temperature sensor module
+=======================
 
-#### Constructors
+Constructors:
+------------
 
 .. class:: Sensor.TP()
     Create a temperature sensor object. Default device address is 0x50
 
-#### Methods:
+Methods:
+------------
+
 .. method:: TP.get_temp()
     Get the degree of temperature from temperature sensor device. return
     temperature value with string type.
@@ -38,14 +42,19 @@ fast version of the STM32F7.
     ID with string type.
 
 
-### pyb LED module
+pyb LED module
+=======================
 
-#### Constructors:
+Constructors:
+------------
+
 .. class:: pyb.LED(id)
     Create an LED object associated with the given LED:
          - ``id`` is the LED number, 1 - green, 2 - blue, 3 - red
 
-#### Methods:
+Methods:
+------------
+
 .. method:: LED.off()
     Turn the LED off.
 
