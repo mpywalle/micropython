@@ -92,36 +92,37 @@ Create three threads to flash LED with red, green and blue color continuesly.
 Create one thread to get temperature with one second interval.
 Create one thread to drive double-motor with one second interval.
 ```python
-    import pyb
-	import time
-	import _thread
-	from Sensor import TP
-    from Driver import DMotor
+import pyb
+import time
+import _thread
+from Sensor import TP
+from Driver import DMotor
 	
-	def led(id, dt):
-		while 1:
-			pyb.LED(id).toggle()
-			time.sleep_ms(dt)
+def led(id, dt):
+	while 1:
+		pyb.LED(id).toggle()
+		time.sleep_ms(dt)
         
-	def real_time_temp(n, dt):
-		temp = TP()
-		cnt = 0
-		while 1:
-			val = temp.get_temp()
-			time.sleep_ms(dt)
-			print(cnt, val)
-			cnt = cnt + 1
-	def run_motor(n, dt):
-		motor = DMotor()
-		while 1:
-			val = motor.set_speed(40, 1, 40, 1)
-			time.sleep_ms(dt)
-			val = motor.set_speed(40, 2, 40, 2)
-			time.sleep_ms(dt)
+def real_time_temp(n, dt):
+	temp = TP()
+	cnt = 0
+	while 1:
+		val = temp.get_temp()
+		time.sleep_ms(dt)
+		print(cnt, val)
+		cnt = cnt + 1
 
-	_thread.start_new_thread(led, (1, 1000))
-	_thread.start_new_thread(led, (2, 1000))
-	_thread.start_new_thread(led, (3, 1000))
-	_thread.start_new_thread(real_time_temp, (1, 1000))
-	_thread.start_new_thread(run_motor, (1, 1000))
+def run_motor(n, dt):
+	motor = DMotor()
+	while 1:
+		val = motor.set_speed(40, 1, 40, 1)
+		time.sleep_ms(dt)
+		val = motor.set_speed(40, 2, 40, 2)
+		time.sleep_ms(dt)
+
+_thread.start_new_thread(led, (1, 1000))
+_thread.start_new_thread(led, (2, 1000))
+_thread.start_new_thread(led, (3, 1000))
+_thread.start_new_thread(real_time_temp, (1, 1000))
+_thread.start_new_thread(run_motor, (1, 1000))
 ```
