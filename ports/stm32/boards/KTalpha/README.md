@@ -19,41 +19,68 @@ not work and none of the advanced features of the STM32H7 are yet supported,
 such as the clock tree.  At this point the STM32H7 should be considered as a
 fast version of the STM32F7.
 
-## KT device modules
+## KT Sensor modules
 
 ### Temperature sensor module
 
 #### Constructors:
 
-`class`:: Sensor.TP()
->Create a temperature sensor object. Default device address is 0x50
+`class`:: ___Sensor.TP()___
+>Create a temperature sensor object. Default device address is `0x50`
 
 #### Methods:
 
-`method`:: TP.get_temp() 
+`method`:: ___TP.get_temp()___ 
 >Get the degree of temperature from temperature sensor device. return temperature value with string type.
 
-`method`:: TP.get_devID()
+`method`:: ___TP.get_devID()___
 >Get the device ID of temperature sensor. return temperature sensor device ID with string type.
 
+## KT Driver modules
 
-### pyb LED module
+### Double motor module
 
 #### Constructors:
 
-`class`:: pyb.LED(id)
+`class`:: ___Driver.DMotor()___
+>Create a double motor object. Default device address is `0x10`
+
+#### Methods:
+
+`method`:: ___DMotor.get_status()___ 
+>Get the running status of both motors from double motors device. return status value with `dict` type. structure as below:
+>> { _lmotor_speed: value,_	value: range 0 ~ 100
+>>   _lmotor_rotation: value,_	value: 0: stop; 1: move forward; 2 move backward
+>>   _rmotor_speed: value,_	value: range 0 ~ 100
+>>   _rmotor_rotation: value_ }	value: 0: stop; 1: move forward; 2 move backward
+
+`method`:: ___Dmotor.get_devID()___
+>Get the device ID of double motors driver. return double motors device ID with string type.
+
+`method`:: ___Dmotor.set_speed(lmotor_speed, lmotor_rotation, rmotor_speed, rmotor_rotation)___
+>Set the speed and rotation of double motors. Return 0 as successful, otherwise error:
+>> lmotor_speed: range 0 ~ 100
+>> lmotor_rotation: 0: stop; 1: move forward; 2 move backward
+>> rmotor_speed: range 0 ~ 100
+>> rmotor_rotation: 0: stop; 1: move forward; 2 move backward
+
+### LED module
+
+#### Constructors:
+
+`class`:: ___pyb.LED(id)___
 >Create an LED object associated with the given LED:
 >- ``id`` is the LED number, 1 - green, 2 - blue, 3 - red
 
 #### Methods:
 
-`method`:: LED.off()
+`method`:: ___LED.off()___
 >Turn the LED off.
 
-`method`:: LED.on()
+`method`:: ___LED.on()___
 >Turn the LED on, to maximum intensity.
 
-`method`:: LED.toggle()
+`method`:: ___LED.toggle()___
 >Toggle the LED between on (maximum intensity) and off. If the LED is
 >at non-zero intensity then it is considered “on” and toggle will turn
 >it off.
