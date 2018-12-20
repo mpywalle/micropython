@@ -1,5 +1,4 @@
-MicroPython port to STM32 MCUs
-==============================
+# MicroPython port to STM32 MCUs
 
 This directory contains the port of MicroPython to ST's line of STM32
 microcontrollers.  Supported MCU series are: STM32F0, STM32F4, STM32F7 and
@@ -20,49 +19,49 @@ not work and none of the advanced features of the STM32H7 are yet supported,
 such as the clock tree.  At this point the STM32H7 should be considered as a
 fast version of the STM32F7.
 
-KT device modules
-------------------
+## KT device modules
 
 ### Temperature sensor module
 
-Constructors:
-class Sensor.TP()
+#### Constructors
+
+.. class:: Sensor.TP()
     Create a temperature sensor object. Default device address is 0x50
 
-Methods:
-TP.get_temp()
+#### Methods:
+.. method:: TP.get_temp()
     Get the degree of temperature from temperature sensor device. return
     temperature value with string type.
 
-TP.get_devID
+.. method:: TP.get_devID
     Get the device ID of temperature sensor. return temperature sensor device
     ID with string type.
 
 
 ### pyb LED module
 
-Constructors:
-class pyb.LED(id)
+#### Constructors:
+.. class:: pyb.LED(id)
     Create an LED object associated with the given LED:
-         id is the LED number, 1 - green, 2 - blue, 3 - red
+         - ``id`` is the LED number, 1 - green, 2 - blue, 3 - red
 
-Methods:
-LED.off()
+#### Methods:
+.. method:: LED.off()
     Turn the LED off.
 
-LED.on()
+.. method:: LED.on()
     Turn the LED on, to maximum intensity.
 
-LED.toggle()
+.. method:: LED.toggle()
     Toggle the LED between on (maximum intensity) and off. If the LED is at
     non-zero intensity then it is considered “on” and toggle will turn it off.
 
 
-Example
--------------------
+## Example
 
-Create three thread to flash LED with red, green and blue color continuesly.
+Create three threads to flash LED with red, green and blue color continuesly.
 Create one thread to get temperature with one second interval.
+Create one thread to drive double-motor with one second interval.
 
     import pyb
 	import time
