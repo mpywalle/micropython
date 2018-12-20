@@ -49,20 +49,20 @@ fast version of the STM32F7.
 
 `method`:: ___DMotor.get_status()___ 
 >Get the running status of both motors from double motors device. return status value with `dict` type. structure as below:
->> { _lmotor_speed: value,_	value: range 0 ~ 100
->>   _lmotor_rotation: value,_	value: 0: stop; 1: move forward; 2 move backward
->>   _rmotor_speed: value,_	value: range 0 ~ 100
->>   _rmotor_rotation: value_ }	value: 0: stop; 1: move forward; 2 move backward
+>> { _lmotor_speed: value,_	value: range 0 ~ 100<br>
+>>   _lmotor_rotation: value,_	value: 0: stop; 1: move forward; 2 move backward<br>
+>>   _rmotor_speed: value,_	value: range 0 ~ 100<br>
+>>   _rmotor_rotation: value_ }	value: 0: stop; 1: move forward; 2 move backward<br>
 
 `method`:: ___Dmotor.get_devID()___
 >Get the device ID of double motors driver. return double motors device ID with string type.
 
 `method`:: ___Dmotor.set_speed(lmotor_speed, lmotor_rotation, rmotor_speed, rmotor_rotation)___
 >Set the speed and rotation of double motors. Return 0 as successful, otherwise error:
->> lmotor_speed: range 0 ~ 100
->> lmotor_rotation: 0: stop; 1: move forward; 2 move backward
->> rmotor_speed: range 0 ~ 100
->> rmotor_rotation: 0: stop; 1: move forward; 2 move backward
+>> lmotor_speed: range 0 ~ 100<br>
+>> lmotor_rotation: 0: stop; 1: move forward; 2 move backward<br>
+>> rmotor_speed: range 0 ~ 100<br>
+>> rmotor_rotation: 0: stop; 1: move forward; 2 move backward<br>
 
 ### LED module
 
