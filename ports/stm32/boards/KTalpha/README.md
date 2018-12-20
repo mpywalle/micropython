@@ -25,17 +25,17 @@ fast version of the STM32F7.
 
 #### Constructors:
 
-.. class:: Sensor.TP()
-		Create a temperature sensor object. Default device address is 0x50
+.. class:: Sensor.TP() <br>
+	Create a temperature sensor object. Default device address is 0x50
 
 #### Methods:
 
-.. method:: TP.get_temp()
-	Get the degree of temperature from temperature sensor device. return
+.. method:: TP.get_temp() <br>
+	Get the degree of temperature from temperature sensor device. return<br>
 	temperature value with string type.
 
-.. method:: TP.get_devID
-	Get the device ID of temperature sensor. return temperature sensor
+.. method:: TP.get_devID() <br>
+	Get the device ID of temperature sensor. return temperature sensor<br>
 	device ID with string type.
 
 
@@ -43,21 +43,21 @@ fast version of the STM32F7.
 
 #### Constructors:
 
-.. class:: pyb.LED(id)
-	Create an LED object associated with the given LED:
+.. class:: pyb.LED(id) <br>
+	Create an LED object associated with the given LED:<br>
 	- ``id`` is the LED number, 1 - green, 2 - blue, 3 - red
 
 #### Methods:
 
-.. method:: LED.off()
+.. method:: LED.off()<br>
 	Turn the LED off.
 
-.. method:: LED.on()
+.. method:: LED.on()<br>
 	Turn the LED on, to maximum intensity.
 
-.. method:: LED.toggle()
-	Toggle the LED between on (maximum intensity) and off. If the LED is
-	at non-zero intensity then it is considered “on” and toggle will turn
+.. method:: LED.toggle()<br>
+	Toggle the LED between on (maximum intensity) and off. If the LED is<br>
+	at non-zero intensity then it is considered “on” and toggle will turn<br>
 	it off.
 
 
