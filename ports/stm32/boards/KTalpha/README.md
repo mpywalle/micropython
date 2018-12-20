@@ -25,39 +25,37 @@ fast version of the STM32F7.
 
 #### Constructors:
 
-.. class:: Sensor.TP() <br>
+`class`:: Sensor.TP()
 >Create a temperature sensor object. Default device address is 0x50
 
 #### Methods:
 
-.. method:: TP.get_temp() <br>
->Get the degree of temperature from temperature sensor device. return<br>
->temperature value with string type.
+`method`:: TP.get_temp() 
+>Get the degree of temperature from temperature sensor device. return temperature value with string type.
 
-.. method:: TP.get_devID() <br>
->Get the device ID of temperature sensor. return temperature sensor<br>
->device ID with string type.
+`method`:: TP.get_devID()
+>Get the device ID of temperature sensor. return temperature sensor device ID with string type.
 
 
 ### pyb LED module
 
 #### Constructors:
 
-.. class:: pyb.LED(id) <br>
->Create an LED object associated with the given LED:<br>
+`class`:: pyb.LED(id)
+>Create an LED object associated with the given LED:
 >- ``id`` is the LED number, 1 - green, 2 - blue, 3 - red
 
 #### Methods:
 
-.. method:: LED.off()<br>
+`method`:: LED.off()
 >Turn the LED off.
 
-.. method:: LED.on()<br>
+`method`:: LED.on()
 >Turn the LED on, to maximum intensity.
 
-.. method:: LED.toggle()<br>
->Toggle the LED between on (maximum intensity) and off. If the LED is<br>
->at non-zero intensity then it is considered “on” and toggle will turn<br>
+`method`:: LED.toggle()
+>Toggle the LED between on (maximum intensity) and off. If the LED is
+>at non-zero intensity then it is considered “on” and toggle will turn
 >it off.
 
 
@@ -66,7 +64,7 @@ fast version of the STM32F7.
 Create three threads to flash LED with red, green and blue color continuesly.
 Create one thread to get temperature with one second interval.
 Create one thread to drive double-motor with one second interval.
-
+```python
     import pyb
 	import time
 	import _thread
@@ -99,4 +97,4 @@ Create one thread to drive double-motor with one second interval.
 	_thread.start_new_thread(led, (3, 1000))
 	_thread.start_new_thread(real_time_temp, (1, 1000))
 	_thread.start_new_thread(run_motor, (1, 1000))
-
+```
