@@ -108,7 +108,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 
-all: $(TOP)/lib/stm32lib/README.md $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
+all: $(TOP)/lib/stm32lib/README.md $(BUILD)/bootloader.dfu $(BUILD)/bootloader.hex
 
 # For convenience, automatically fetch required submodules if they don't exist
 $(TOP)/lib/stm32lib/README.md:
@@ -117,22 +117,22 @@ $(TOP)/lib/stm32lib/README.md:
 
 .PHONY: deploy
 
-deploy: $(BUILD)/firmware.dfu
+deploy: $(BUILD)/bootloader.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(PYDFU) -u $<
 
 FLASH_ADDR = 0x08000000
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
-	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware.bin $@
+$(BUILD)/bootloader.dfu: $(BUILD)/bootloader.elf
+	$(ECHO) "Create $@ Text0: $(TEXT0_ADDR)"
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/bootloader.bin
+	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/bootloader.bin $@
 
-$(BUILD)/firmware.hex: $(BUILD)/firmware.elf
+$(BUILD)/bootloader.hex: $(BUILD)/bootloader.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O ihex $< $@
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/bootloader.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@

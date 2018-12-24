@@ -75,6 +75,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
 #define MICROPY_HW_USRSW_PRESSED    (0)
 
+
 // The pyboard has 4 LEDs
 #define MICROPY_HW_LED1             (pin_C0) // green
 #define MICROPY_HW_LED2             (pin_C1) // blue
@@ -97,7 +98,25 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)
 
 // Bootloader configuration (only needed if Mboot is used)
-#define MBOOT_I2C_PERIPH_ID 1
-#define MBOOT_I2C_SCL (pin_B8)
-#define MBOOT_I2C_SDA (pin_B9)
-#define MBOOT_I2C_ALTFUNC (4)
+#define USE_MBOOT 1
+
+// #define MBOOT_I2C_PERIPH_ID 1
+// #define MBOOT_I2C_SCL (pin_B8)
+// #define MBOOT_I2C_SDA (pin_B9)
+// #define MBOOT_I2C_ALTFUNC (4)
+
+#define MBOOT_BOOTPIN_PIN (pin_A0)
+#define MBOOT_BOOTPIN_PULL (MP_HAL_PIN_PULL_UP)
+#define MBOOT_BOOTPIN_ACTIVE (0)
+
+#define MBOOT_SPIFLASH_ADDR (0x80000000)
+#define MBOOT_SPIFLASH_BYTE_SIZE (1 * 1024 * 1024)
+#define MBOOT_SPIFLASH_LAYOUT "/0x80000000/64*16Kg"
+#define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE (16/4)
+#define MBOOT_SPIFLASH_SPIFLASH (&spi_bdev.spiflash)
+#define MBOOT_SPIFLASH_CONFIG (&spiflash_config)
+
+// Bootloader LED GPIO port/pin
+#define BOOTLDR_LED_PIN     (GPIO_PIN_0)
+#define BOOTLDR_LED_PORT    (GPIOC)
+

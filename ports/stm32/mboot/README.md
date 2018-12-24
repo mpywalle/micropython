@@ -62,12 +62,12 @@ How to use
 3. Build mboot via:
 
     $ cd mboot
-    $ make BOARD=<board-id>
+    $ make BOARD=<board-id> USE_MBOOT=1
 
    That should produce a DFU file for mboot.  It can be deployed using
    USB DFU programming via (it will be placed at location 0x08000000):
 
-    $ make BOARD=<board-id> deploy
+    $ make BOARD=<board-id> USE_MBOOT=1 deploy
 
 4. Reset the board while holding USR until all 3 LEDs are lit (the 4th option in
    the cycle) and then release USR.  LED0 will then blink once per second to
