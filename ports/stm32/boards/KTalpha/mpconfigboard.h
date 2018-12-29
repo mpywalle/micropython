@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME       "KTalphav0.1"
+#define MICROPY_HW_BOARD_NAME       "KTalphav0.2"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
 #define MICROPY_PY_THREAD           (1)
@@ -117,6 +117,14 @@ extern struct _spi_bdev_t spi_bdev;
 #define MBOOT_SPIFLASH_CONFIG (&spiflash_config)
 
 // Bootloader LED GPIO port/pin
-#define BOOTLDR_LED_PIN     (GPIO_PIN_0)
-#define BOOTLDR_LED_PORT    (GPIOC)
+#define BOOTLDR_LED1_PIN     (GPIO_PIN_0)
+#define BOOTLDR_LED1_PORT    (GPIOC)
+#define BOOTLDR_LED2_PIN     (GPIO_PIN_1)
+#define BOOTLDR_LED2_PORT    (GPIOC)
+#define BOOTLDR_LED3_PIN     (GPIO_PIN_2)
+#define BOOTLDR_LED3_PORT    (GPIOC)
 
+// Flash sectors for the bootloader.
+// Flash FS sector, main FW sector, max sector. 
+// TODO, need to redefine
+#define BT_INT_FLASH_LAYOUT        {1, 4, 11}
