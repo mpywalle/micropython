@@ -85,6 +85,31 @@ fast version of the STM32F7.
 >at non-zero intensity then it is considered “on” and toggle will turn
 >it off.
 
+### exLED module
+
+#### Constructors:
+
+`class`:: ___Driver.LED()___
+>Create a exLED object. Default device address is `0x14`
+
+#### Methods:
+
+`method`:: ___LED.get_status()___ 
+>Get the LED status of three color's value. return status value with `dict` type. structure as below:
+>> {<br> 
+>>   _red:   value,_       value: range 0 ~ 255, value "0" means red LED is turn off<br>
+>>   _green: value,_       value: range 0 ~ 255, value "0" means green LED is turn off<br>
+>>   _blue:  value_        value: range 0 ~ 255, value "0" means blue LED is turn off<br>
+>> }<br>
+
+`method`:: ___LED.get_devID()___
+>Get the device ID of double motors driver. return double motors device ID with string type.
+
+`method`:: ___LED.set_color(red, green, blue)___
+>Set the red/green/blue color value for LED. Return 0 as successful, otherwise error:
+>> red:    range 0 ~ 255, value "0" means turning off red LED<br>
+>> green:  range 0 ~ 255, value "0" means turning off green LED<br>
+>> blue:   range 0 ~ 255, value "0" means turning off blue LED<br>
 
 ## Example
 
@@ -96,7 +121,7 @@ import pyb
 import time
 import _thread
 from Sensor import TP
-from Driver import DMotor
+from Driver import DMotor, LED
 	
 def led(id, dt):
 	while 1:
@@ -119,10 +144,21 @@ def run_motor(n, dt):
 		time.sleep_ms(dt)
 		val = motor.set_speed(40, 2, 40, 2)
 		time.sleep_ms(dt)
+		
+def exled(id, dt):
+	led = LED()
+	while 1:
+		led.set_color(80, 0, 0)
+		time.sleep_ms(dt)
+		led.set_color(0, 80, 0)
+		time.sleep_ms(dt)
+		led.set_color(0, 0, 80)
+		time.sleep_ms(dt)
 
 _thread.start_new_thread(led, (1, 1000))
 _thread.start_new_thread(led, (2, 1000))
 _thread.start_new_thread(led, (3, 1000))
 _thread.start_new_thread(real_time_temp, (1, 1000))
 _thread.start_new_thread(run_motor, (1, 1000))
+_thread.start_new_thread(exled, (3, 200))
 ```

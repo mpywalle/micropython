@@ -26,3 +26,24 @@ class DMotor(i2cDev):
         super(DMotor, self).i2cDev_mem_write(0x01, speed)
 
         return 0
+
+class LED(i2cDev):
+
+    def __init__(self):
+        super(LED, self).__init__(20)
+        if super(LED, self).i2cDev_ready():
+            self.enable = True
+
+    def get_status(self):
+        data = super(LED, self).i2cDev_mem_read(0x02, 4)
+        status = {'red': data[0], 'green': data[1], 'blue': data[2]}
+        return status
+
+    def set_color(self, red, green, blue):
+        if (red not in range(0, 256)) or (green not in range(0, 256)) or (blue not in range(0, 256)):
+            return -1
+
+        color = bytes([red, green, blue, 0x00])
+        super(LED, self).i2cDev_mem_write(0x02, color)
+
+        return 0
