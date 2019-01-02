@@ -19,3 +19,14 @@ class TP(i2cDev):
 #        deviceID = super(TP, self).i2cDev_mem_read(0x00, 4)
 #        return deviceID.strip()
 
+class Button(i2cDev):
+
+    def __init__(self):
+        super(Button, self).__init__(100)
+        if super(Button, self).i2cDev_ready():
+            self.enable = True
+
+    def get_status(self):
+        data = super(Button, self).i2cDev_mem_read(0x02, 2)
+        status = {'status': data[0], 'count': data[1]}
+        return status

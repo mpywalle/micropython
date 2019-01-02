@@ -36,6 +36,25 @@ fast version of the STM32F7.
 `method`:: ___TP.get_devID()___
 >Get the device ID of temperature sensor. return temperature sensor device ID with string type.
 
+### Button sensor module
+
+#### Constructors:
+
+`class`:: ___Sensor.Button()___
+>Create a button sensor object. Default device address is `0x64`
+
+#### Methods:
+
+`method`:: ___Button.get_status()___ 
+>Get the press status from button sensor device. return button press status value with 'dict' type. structure as below:
+>> {<br>
+>>   _status: value,_             value: 0: no press; 1: pressed <br>
+>>   _count: value_               value: range 0 ~ 255, clear when exceed 255 <br>
+>> }<br>
+
+`method`:: ___Button.get_devID()___
+>Get the device ID of button sensor. return button sensor device ID with string type.
+
 ## KT Driver modules
 
 ### Double motor module
@@ -103,7 +122,7 @@ fast version of the STM32F7.
 >> }<br>
 
 `method`:: ___LED.get_devID()___
->Get the device ID of double motors driver. return double motors device ID with string type.
+>Get the device ID of exLED driver. return exLED device ID with string type.
 
 `method`:: ___LED.set_color(red, green, blue)___
 >Set the red/green/blue color value for LED. Return 0 as successful, otherwise error:
@@ -113,52 +132,4 @@ fast version of the STM32F7.
 
 ## Example
 
-Create three threads to flash LED with red, green and blue color continuesly.
-Create one thread to get temperature with one second interval.
-Create one thread to drive double-motor with one second interval.
-```python
-import pyb
-import time
-import _thread
-from Sensor import TP
-from Driver import DMotor, LED
-	
-def led(id, dt):
-	while 1:
-		pyb.LED(id).toggle()
-		time.sleep_ms(dt)
-        
-def real_time_temp(n, dt):
-	temp = TP()
-	cnt = 0
-	while 1:
-		val = temp.get_temp()
-		time.sleep_ms(dt)
-		print(cnt, val)
-		cnt = cnt + 1
-
-def run_motor(n, dt):
-	motor = DMotor()
-	while 1:
-		val = motor.set_speed(40, 1, 40, 1)
-		time.sleep_ms(dt)
-		val = motor.set_speed(40, 2, 40, 2)
-		time.sleep_ms(dt)
-		
-def exled(id, dt):
-	led = LED()
-	while 1:
-		led.set_color(80, 0, 0)
-		time.sleep_ms(dt)
-		led.set_color(0, 80, 0)
-		time.sleep_ms(dt)
-		led.set_color(0, 0, 80)
-		time.sleep_ms(dt)
-
-_thread.start_new_thread(led, (1, 1000))
-_thread.start_new_thread(led, (2, 1000))
-_thread.start_new_thread(led, (3, 1000))
-_thread.start_new_thread(real_time_temp, (1, 1000))
-_thread.start_new_thread(run_motor, (1, 1000))
-_thread.start_new_thread(exled, (3, 200))
-```
+refer example.py
