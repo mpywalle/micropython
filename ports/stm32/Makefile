@@ -543,9 +543,9 @@ INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
 FILE2H = $(TOP)/tools/file2h.py
 
 USB_IDS_FILE = usb.h
-CDCINF_TEMPLATE = pybcdc.inf_template
-GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
-GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
+CDCINF_TEMPLATE = KTcdc.inf_template
+GEN_CDCINF_FILE = $(HEADER_BUILD)/KTcdc.inf
+GEN_CDCINF_HEADER = $(HEADER_BUILD)/KTcdc_inf.h
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(EXTMOD_SRC_C)

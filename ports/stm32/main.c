@@ -150,7 +150,7 @@ static const char fresh_main_py[] =
 ;
 
 static const char fresh_pybcdc_inf[] =
-#include "genhdr/pybcdc_inf.h"
+#include "genhdr/KTcdc_inf.h"
 ;
 
 static const char fresh_readme_txt[] =
@@ -160,7 +160,7 @@ static const char fresh_readme_txt[] =
 "\r\n"
 "For a serial prompt:\r\n"
 " - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
-"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
+"   then update the driver software, using the 'KTcdc.inf' file found on this drive.\r\n"
 "   Then use a terminal program like Hyperterminal or putty.\r\n"
 " - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
 " - Linux: use the command: screen /dev/ttyACM0\r\n"
@@ -206,7 +206,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         f_close(&fp);
 
         // create .inf driver file
-        f_open(&vfs_fat->fatfs, &fp, "/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/KTcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
         f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
