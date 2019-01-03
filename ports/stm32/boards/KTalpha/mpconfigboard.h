@@ -16,6 +16,9 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_USB       (1)
 
+// enable trace log
+#define MICROPY_PY_DEBUG			(1)
+
 // use external SPI flash for storage
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (8 * 1024 * 1024)        // 8M bits flash for KT ver alpha
 #define MICROPY_HW_SPIFLASH_CS      (pin_B12)

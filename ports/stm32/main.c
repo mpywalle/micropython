@@ -62,6 +62,7 @@
 #include "dac.h"
 #include "can.h"
 #include "modnetwork.h"
+#include "trace.h"
 
 void SystemClock_Config(void);
 
@@ -646,6 +647,10 @@ soft_reset:
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     }
+
+	trace_init();
+
+	trace_write("====================trace log init====================\n");
 
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
