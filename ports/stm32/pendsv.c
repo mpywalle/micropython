@@ -61,6 +61,13 @@ void pendsv_kbd_intr(void) {
     }
 }
 
+// This will always force the exception by using the hardware PENDSV
+void pendsv_nlr_jump_hard(void *o) {
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+    pendsv_object = o;
+    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+}
+
 void pendsv_isr_handler(void) {
     // re-jig the stack so that when we return from this interrupt handler
     // it returns instead to nlr_jump with argument pendsv_object
@@ -94,6 +101,8 @@ void pendsv_isr_handler(void) {
         "ldr r0, [r1]\n"
         "cmp r0, 0\n"
         "beq .no_obj\n"
+        "mov r2, #0x01000000 \n"        // Modify stacked XPSR to make sure
+        "str r2, [sp, #28] \n"          // possible LDM/STM progress is cleared.
         "str r0, [sp, #0]\n"            // store to r0 on stack
         "mov r0, #0\n"
         "str r0, [r1]\n"                // clear pendsv_object

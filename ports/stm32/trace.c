@@ -1,10 +1,11 @@
 #include "trace.h"
+#include "storage.h"
 
 extern fs_user_mount_t fs_user_mount_flash; 
 FIL trace_log_fp;
 
 
-#ifdef MICROPY_PY_DEBUG
+#if MICROPY_PY_DEBUG
 int trace_init() {
 	FRESULT ret;
 	fs_user_mount_t *vfs_fat = &fs_user_mount_flash;

@@ -44,6 +44,7 @@
 #include "py/obj.h"
 #include "lib/utils/interrupt_char.h"
 #include "irq.h"
+#include "trace.h"
 
 #if MICROPY_HW_ENABLE_USB
 
@@ -58,8 +59,16 @@
 #define CDC_SET_CONTROL_LINE_STATE                  0x22
 #define CDC_SEND_BREAK                              0x23
 
+#define IDE_BAUDRATE_SLOW    (9600)
+#define IDE_BAUDRATE_FAST    (12000000)
+
+extern void usbdbg_data_in(void *buffer, int length);
+extern void usbdbg_data_out(void *buffer, int length);
+extern void usbdbg_control(void *buffer, uint8_t brequest, uint32_t wlength);
+
 // Used to control the connect_state variable when USB host opens the serial port
 static uint8_t usbd_cdc_connect_tx_timer;
+static void send_packet(usbd_cdc_itf_t *cdc);
 
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
@@ -79,6 +88,10 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     cdc->attached_to_repl = 1;
     #endif
 
+    cdc->baudrate = 0;
+    cdc->dbg_mode_enabled = 0;
+    cdc->dbg_xfer_length  = 0;
+
     // Return the buffer to place the first USB OUT packet
     return cdc->rx_packet_buf;
 }
@@ -96,6 +109,7 @@ void usbd_cdc_deinit(usbd_cdc_state_t *cdc_in) {
 int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, uint16_t length) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
 
+	trace_write("usbd_cdc_control,  cmd: 0x%x length: 0x%x.\r\n", cmd, length);
     switch (cmd) {
         case CDC_SEND_ENCAPSULATED_COMMAND:
             /* Add your code here */
@@ -126,14 +140,33 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, ui
             LineCoding.datatype   = pbuf[6];
             /* Set the new configuration */
             #endif
+            cdc->baudrate = *((uint32_t*)pbuf);
+            // The slow cdc->baudrate can be used on OSs that don't support custom baudrates
+            if (cdc->baudrate == IDE_BAUDRATE_SLOW || cdc->baudrate == IDE_BAUDRATE_FAST) {
+				trace_write("dbg_mode_enabled is on +++++++++++++++.\r\n");
+                cdc->dbg_mode_enabled = 1;
+                cdc->dbg_xfer_length = 0; 
+                cdc->dbg_last_packet = 0; 
+                cdc->tx_buf_ptr_in = 0;   
+                cdc->tx_buf_ptr_out = 0;  
+                cdc->tx_buf_ptr_out_shadow = 0;
+                cdc->tx_need_empty_packet = 0;
+            } else {
+				trace_write("dbg_mode_enabled is off --------------.\r\n"); 
+                cdc->dbg_mode_enabled = 0;
+                cdc->tx_buf_ptr_in = 0;   
+                cdc->tx_buf_ptr_out = 0;  
+                cdc->tx_buf_ptr_out_shadow = 0;
+                cdc->tx_need_empty_packet = 0;
+            }
             break;
 
         case CDC_GET_LINE_CODING:
             /* Add your code here */
-            pbuf[0] = (uint8_t)(115200);
-            pbuf[1] = (uint8_t)(115200 >> 8);
-            pbuf[2] = (uint8_t)(115200 >> 16);
-            pbuf[3] = (uint8_t)(115200 >> 24);
+            pbuf[0] = (uint8_t)(cdc->baudrate); 
+            pbuf[1] = (uint8_t)(cdc->baudrate >> 8); 
+            pbuf[2] = (uint8_t)(cdc->baudrate >> 16); 
+            pbuf[3] = (uint8_t)(cdc->baudrate >> 24);
             pbuf[4] = 0; // stop bits (1)
             pbuf[5] = 0; // parity (none)
             pbuf[6] = 8; // number of bits (8)
@@ -172,6 +205,13 @@ void usbd_cdc_tx_ready(usbd_cdc_state_t *cdc_in) {
 
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
     cdc->tx_buf_ptr_out = cdc->tx_buf_ptr_out_shadow;
+
+	if (cdc->dbg_mode_enabled == 1) {
+		if (cdc->dbg_xfer_length) {
+            send_packet(cdc);
+			return;
+        }
+	}
 
     if (cdc->tx_buf_ptr_out == cdc->tx_buf_ptr_in && !cdc->tx_need_empty_packet) {
         // No outstanding data to send
@@ -236,26 +276,50 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     }
 }
 
+static void send_packet(usbd_cdc_itf_t *cdc) {
+    int bytes = MIN(cdc->dbg_xfer_length, CDC_DATA_FS_MAX_PACKET_SIZE);
+    cdc->dbg_last_packet = bytes;
+    usbdbg_data_in(cdc->dbg_xfer_buffer, bytes);
+    cdc->dbg_xfer_length -= bytes;
+	trace_write("send_packet: xfer_len %ld.\r\n", bytes);
+    USBD_CDC_TransmitPacket(&cdc->base, bytes, cdc->dbg_xfer_buffer);
+}
+
 // Data received over USB OUT endpoint is processed here.
 // len: number of bytes received into the buffer we passed to USBD_CDC_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
 int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
 
-    // copy the incoming data into the circular buffer
-    for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
-        if (cdc->attached_to_repl && mp_interrupt_char != -1 && *src == mp_interrupt_char) {
-            pendsv_kbd_intr();
-        } else {
-            uint16_t next_put = (cdc->rx_buf_put + 1) & (USBD_CDC_RX_DATA_SIZE - 1);
-            if (next_put == cdc->rx_buf_get) {
-                // overflow, we just discard the rest of the chars
-                break;
-            }
-            cdc->rx_user_buf[cdc->rx_buf_put] = *src;
-            cdc->rx_buf_put = next_put;
+    if (cdc->dbg_mode_enabled == 1) {
+        trace_write("usbd_cdc_receive: xfer_len %ld, cmd 0x%x, req 0x%x data: %x,%x,%x,%x.\r\n", cdc->dbg_xfer_length, cdc->rx_packet_buf[0], cdc->rx_packet_buf[1], cdc->rx_packet_buf[2], cdc->rx_packet_buf[3], cdc->rx_packet_buf[4], cdc->rx_packet_buf[5]);
+        if (cdc->dbg_xfer_length) {   
+            usbdbg_data_out(cdc->rx_packet_buf, len);
+            cdc->dbg_xfer_length -= len; 
+        } else if (cdc->rx_packet_buf[0] == '\x30') { // command
+            uint8_t request = cdc->rx_packet_buf[1];
+            cdc->dbg_xfer_length = *((uint32_t*)(cdc->rx_packet_buf+2));
+            usbdbg_control(cdc->rx_packet_buf+6, request, cdc->dbg_xfer_length);
+            if (cdc->dbg_xfer_length && (request & 0x80)) { //request has a device-to-host data phase
+				send_packet(cdc); //prime tx buffer
+ 			}
         }
-    }
+    } else {
+	    // copy the incoming data into the circular buffer
+	    for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
+	        if (cdc->attached_to_repl && mp_interrupt_char != -1 && *src == mp_interrupt_char) {
+	            pendsv_kbd_intr();
+	        } else {
+	            uint16_t next_put = (cdc->rx_buf_put + 1) & (USBD_CDC_RX_DATA_SIZE - 1);
+	            if (next_put == cdc->rx_buf_get) {
+	                // overflow, we just discard the rest of the chars
+	                break;
+	            }
+	            cdc->rx_user_buf[cdc->rx_buf_put] = *src;
+	            cdc->rx_buf_put = next_put;
+	        }
+	    }
+	}
 
     // initiate next USB packet transfer
     USBD_CDC_ReceivePacket(&cdc->base, cdc->rx_packet_buf);

@@ -28,7 +28,7 @@
 
 void pendsv_init(void);
 void pendsv_kbd_intr(void);
-
+void pendsv_nlr_jump_hard(void *o);
 // since we play tricks with the stack, the compiler must not generate a
 // prelude for this function
 void pendsv_isr_handler(void) __attribute__((naked));

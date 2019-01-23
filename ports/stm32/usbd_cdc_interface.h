@@ -39,6 +39,8 @@
 #define USBD_CDC_CONNECT_STATE_CONNECTING (1)
 #define USBD_CDC_CONNECT_STATE_CONNECTED (2)
 
+#define DBG_MAX_PACKET      (64)
+
 typedef struct _usbd_cdc_itf_t {
     usbd_cdc_state_t base; // state for the base CDC layer
 
@@ -52,6 +54,12 @@ typedef struct _usbd_cdc_itf_t {
     volatile uint16_t tx_buf_ptr_out; // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when data is drained
     uint16_t tx_buf_ptr_out_shadow; // shadow of above
     uint8_t tx_need_empty_packet; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
+
+    uint32_t baudrate;
+    volatile uint8_t dbg_mode_enabled;
+    volatile uint32_t dbg_last_packet;
+    volatile uint32_t dbg_xfer_length;
+    uint8_t dbg_xfer_buffer[DBG_MAX_PACKET];
 
     volatile uint8_t connect_state; // indicates if we are connected
     uint8_t attached_to_repl; // indicates if interface is connected to REPL

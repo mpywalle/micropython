@@ -213,6 +213,8 @@ SRC_C = \
 	stm32_it.c \
 	usbd_conf.c \
 	usbd_desc.c \
+	usbdbg.c \
+	trace.c \
 	usbd_cdc_interface.c \
 	usbd_hid_interface.c \
 	usbd_msc_storage.c \

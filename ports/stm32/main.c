@@ -63,6 +63,7 @@
 #include "can.h"
 #include "modnetwork.h"
 #include "trace.h"
+#include "usbdbg.h"
 
 void SystemClock_Config(void);
 
@@ -422,6 +423,46 @@ STATIC uint update_reset_mode(uint reset_mode) {
 }
 #endif
 
+int exec_boot_script(const char *path, bool interruptible)
+{
+    nlr_buf_t nlr;
+    bool interrupted = false;
+	int ret = 0;
+    mp_import_stat_t stat = mp_import_stat(path);
+
+	if (stat == MP_IMPORT_STAT_FILE) {
+        if (nlr_push(&nlr) == 0) {
+            // Enable IDE interrupts if allowed.
+            if (interruptible) {
+                usbdbg_set_irq_enabled(true);
+                usbdbg_set_script_running(true);
+            }
+
+            // Parse, compile and execute the script.
+            ret = pyexec_file(path);
+			trace_write("pyexec file executed, 0x%lx.\r\n", ret);
+            nlr_pop();
+        } else {
+			trace_write("interrupted=true.\r\n");
+            interrupted = true;
+        }
+    }
+
+    // Disable IDE interrupts
+    usbdbg_set_irq_enabled(false);
+    usbdbg_set_script_running(false);
+
+    if (interrupted) {
+		mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+        if (nlr_push(&nlr) == 0) {
+            flash_error(3);
+            nlr_pop();
+        }// If this gets interrupted again ignore it.
+    }
+
+    return ret;
+}
+
 void stm32_main(uint32_t reset_mode) {
     // Enable caches and prefetch buffers
 
@@ -534,6 +575,7 @@ void stm32_main(uint32_t reset_mode) {
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
     // So for now we only init the lwIP stack once on power-up.
     lwip_init();
+	usbdbg_init();
     #endif
 
 soft_reset:
@@ -658,17 +700,11 @@ soft_reset:
     // run boot.py, if it exists
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
     if (reset_mode == 1 || reset_mode == 3) {
-        const char *boot_py = "boot.py";
-        mp_import_stat_t stat = mp_import_stat(boot_py);
-        if (stat == MP_IMPORT_STAT_FILE) {
-            int ret = pyexec_file(boot_py);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                goto soft_reset_exit;
-            }
-            if (!ret) {
-                flash_error(4);
-            }
-        }
+		int ret = exec_boot_script("boot.py", false);
+		if(ret & PYEXEC_FORCED_EXIT)
+			goto soft_reset_exit;
+		if(!ret)
+			flash_error(4);
     }
 
     // turn boot-up LEDs off
@@ -714,34 +750,47 @@ soft_reset:
 
     // Run the main script from the current directory.
     if ((reset_mode == 1 || reset_mode == 3) && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        const char *main_py;
-        if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
-            main_py = "main.py";
-        } else {
-            main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
-        }
-        mp_import_stat_t stat = mp_import_stat(main_py);
-        if (stat == MP_IMPORT_STAT_FILE) {
-            int ret = pyexec_file(main_py);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                goto soft_reset_exit;
-            }
-            if (!ret) {
-                flash_error(3);
-            }
-        }
+		int ret = exec_boot_script("main.py", true);
+		if(ret & PYEXEC_FORCED_EXIT)
+			goto soft_reset_exit;
+			;
+		if(!ret)
+			flash_error(3);
     }
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     for (;;) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            if (pyexec_raw_repl() != 0) {
-                break;
-            }
-        } else {
-            if (pyexec_friendly_repl() != 0) {
-                break;
+		while (!usbdbg_script_ready()) {
+			nlr_buf_t nlr;
+			if (nlr_push(&nlr) == 0) {
+				usbdbg_set_irq_enabled(true);
+
+				if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+					if (pyexec_raw_repl() != 0) {
+						break;
+					}
+				} else {
+					if (pyexec_friendly_repl() != 0) {
+						break;
+					}
+				}
+				nlr_pop();
+			}
+		}
+
+        if (usbdbg_script_ready()) {
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                // Enable IDE interrupt
+                usbdbg_set_irq_enabled(true);
+
+                // Execute the script.
+                trace_write("execute py script in repl.\r\n");
+                pyexec_str(usbdbg_get_script());
+                nlr_pop();
+            } else {
+                mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
             }
         }
     }
