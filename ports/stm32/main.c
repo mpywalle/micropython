@@ -64,6 +64,7 @@
 #include "modnetwork.h"
 #include "trace.h"
 #include "usbdbg.h"
+#include "powerchipmanage.h" // POWER MANAGE CHIP (jlrjlr_5305)
 
 void SystemClock_Config(void);
 
@@ -690,6 +691,12 @@ soft_reset:
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     }
 
+    // enable POWER MANAGE CHIP (jlrjlr_5305)
+    #if defined(MICROPY_POWER_CHIP_ACT)
+        //__HAL_RCC_GPIOD_CLK_ENABLE();
+        power_chip_init0();
+    #endif
+	
 	trace_init();
 
 	trace_write("====================trace log init====================\n");
