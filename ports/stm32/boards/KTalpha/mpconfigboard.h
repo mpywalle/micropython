@@ -19,6 +19,9 @@
 // enable trace log
 #define MICROPY_PY_DEBUG			(0)
 
+//for POWER MANAGE CHIP (jlrjlr_5305)	
+#define MICROPY_POWER_CHIP_ACT	    (1)
+
 // use external SPI flash for storage
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (8 * 1024 * 1024)        // 8M bits flash for KT ver alpha
 #define MICROPY_HW_SPIFLASH_CS      (pin_B12)
