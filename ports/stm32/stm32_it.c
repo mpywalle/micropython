@@ -82,6 +82,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "usb.h"
+#include "powerchipmanage.h"// POWER MANAGE CHIP (jlrjlr_5305)
 
 extern void __fatal_error(const char*);
 #if defined(MICROPY_HW_USB_FS)
@@ -507,7 +508,8 @@ void EXTI2_IRQHandler(void) {
 
 void EXTI3_IRQHandler(void) {
     IRQ_ENTER(EXTI3_IRQn);
-    Handle_EXTI_Irq(3);
+    power_chip_key_press();       // POWER MANAGE CHIP (jlrjlr_5305)
+    //Handle_EXTI_Irq(3);
     IRQ_EXIT(EXTI3_IRQn);
 }
 
