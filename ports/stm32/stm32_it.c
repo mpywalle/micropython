@@ -82,7 +82,10 @@
 #include "dma.h"
 #include "i2c.h"
 #include "usb.h"
+
+#if defined(MICROPY_POWER_CHIP_ACT)
 #include "powerchipmanage.h"// POWER MANAGE CHIP (jlrjlr_5305)
+#endif
 
 extern void __fatal_error(const char*);
 #if defined(MICROPY_HW_USB_FS)
@@ -692,6 +695,9 @@ void TIM5_IRQHandler(void) {
     IRQ_ENTER(TIM5_IRQn);
     timer_irq_handler(5);
     HAL_TIM_IRQHandler(&TIM5_Handle);
+    #if defined(MICROPY_POWER_CHIP_ACT)
+    power_chip_tick_update();       // POWER MANAGE CHIP (jlrjlr_5305)
+    #endif
     IRQ_EXIT(TIM5_IRQn);
 }
 
