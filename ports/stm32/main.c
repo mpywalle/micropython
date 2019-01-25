@@ -64,7 +64,10 @@
 #include "modnetwork.h"
 #include "trace.h"
 #include "usbdbg.h"
+
+#if defined(MICROPY_POWER_CHIP_ACT)
 #include "powerchipmanage.h" // POWER MANAGE CHIP (jlrjlr_5305)
+#endif
 
 void SystemClock_Config(void);
 
