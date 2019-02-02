@@ -76,7 +76,10 @@ SRC_LIB = $(addprefix lib/,\
 	)
 
 SRC_C = $(wildcard src/*.c) \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/ports/stm32/boards/$(BOARD)/*.c))
+		$(addprefix $(TOP)/ports/stm32/boards/$(BOARD)/, \
+	bdev.c\
+	)
+#	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/ports/stm32/boards/$(BOARD)/*.c))
 
 SRC_O = \
 	src/startup_stm32f405xx.o \
