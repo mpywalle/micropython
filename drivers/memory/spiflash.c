@@ -269,8 +269,15 @@ void mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uin
     if (len == 0) {
         return;
     }
-    mp_spiflash_acquire_bus(self);
+
     mp_spiflash_cache_t *cache = self->config->cache;
+    if (cache == NULL) {
+        mp_spiflash_read(self, addr, len, dest);
+        return;
+    }
+
+    mp_spiflash_acquire_bus(self);
+
     if (cache->user == self && cache->block != 0xffffffff) {
         uint32_t bis = addr / SECTOR_SIZE;
         uint32_t bie = (addr + len - 1) / SECTOR_SIZE;
@@ -333,6 +340,9 @@ STATIC void mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
 }
 
 void mp_spiflash_cache_flush(mp_spiflash_t *self) {
+    mp_spiflash_cache_t *cache = self->config->cache;
+    if (cache == NULL) return;
+
     mp_spiflash_acquire_bus(self);
     mp_spiflash_cache_flush_internal(self);
     mp_spiflash_release_bus(self);
@@ -421,9 +431,15 @@ int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, con
     uint32_t bis = addr / SECTOR_SIZE;
     uint32_t bie = (addr + len - 1) / SECTOR_SIZE;
 
+    mp_spiflash_cache_t *cache = self->config->cache;
+    if (cache == NULL) {
+        int ret = 0;
+        ret = mp_spiflash_write(self, addr, len, src);
+        return ret;
+    }
+
     mp_spiflash_acquire_bus(self);
 
-    mp_spiflash_cache_t *cache = self->config->cache;
     if (cache->user == self && bis <= cache->block && bie >= cache->block) {
         // Write straddles current buffer
         uint32_t pre;
