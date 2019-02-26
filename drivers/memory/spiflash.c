@@ -241,23 +241,42 @@ void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *d
 }
 
 int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
-    mp_spiflash_acquire_bus(self);
+    // align to 4096 sector
+    uint32_t offset = addr & (SECTOR_SIZE - 1);
+    addr = (addr >> 12) << 12;
     int ret = 0;
-    uint32_t offset = addr & (PAGE_SIZE - 1);
-    while (len) {
-        size_t rest = PAGE_SIZE - offset;
-        if (rest > len) {
+    uint8_t buf[SECTOR_SIZE];
+
+    mp_spiflash_acquire_bus(self);
+	while (len) {
+        mp_spiflash_read_data(self, addr, SECTOR_SIZE, buf);
+        ret = mp_spiflash_erase_block_internal(self, addr);
+        if (ret != 0){
+            mp_spiflash_release_bus(self);
+			return ret;
+        }
+
+        size_t rest = SECTOR_SIZE - offset;
+        if (rest > len){
             rest = len;
         }
-        ret = mp_spiflash_write_page(self, addr, rest, src);
-        if (ret != 0) {
-            break;
+        // copy new block into buffer
+        memcpy(buf + offset, src, rest);
+
+        // write sector in pages of 256 bytes
+        for (int i = 0; i < SECTOR_SIZE; i += PAGE_SIZE) {
+            ret = mp_spiflash_write_page(self, addr + i, PAGE_SIZE, buf + i);
+            if (ret != 0) {
+                mp_spiflash_release_bus(self);
+                return ret;
+            }
         }
         len -= rest;
-        addr += rest;
+        addr += SECTOR_SIZE;
         src += rest;
         offset = 0;
     }
+
     mp_spiflash_release_bus(self);
     return ret;
 }
