@@ -13,16 +13,55 @@ class DMotor(i2cDev):
         return status
 
     def set_speed(self, lmotor_speed, lmotor_rotation, rmotor_speed, rmotor_rotation):
-        if lmotor_speed not in range(0, 100):
-            return -1
-        if rmotor_speed not in range(0, 100):
-            return -1 
+        #speed: 0 <-> 100
+        if lmotor_speed > 100:
+            lmotor_speed = 100
+        elif lmotor_speed < 0:
+            lmotor_speed = 0
+
+        if rmotor_speed > 100:
+            rmotor_speed = 100
+        elif rmotor_speed < 0:
+            rmotor_speed = 0
+
         if lmotor_rotation not in [0, 1, 2]:
-            return -1
+            lmotor_rotation = 0
         if rmotor_rotation not in [0, 1, 2]:
-            return -1
+            rmotor_rotation = 0
 
         speed = bytes([lmotor_speed, rmotor_speed, lmotor_rotation, rmotor_rotation])
+        super(DMotor, self).i2cDev_mem_write(0x01, speed)
+
+        return 0
+
+    def set_speed_v2(self, lmotor_speed, rmotor_speed):
+        #speed: -100 <-> 100
+        if lmotor_speed > 100:
+            lmotor_speed = 100
+        elif lmotor_speed <-100:
+            lmotor_speed = -100
+
+        if rmotor_speed >100:
+            rmotor_speed = 100
+        elif rmotor_speed < -100:
+            rmotor_speed = -100
+
+        #set the rotation
+        if lmotor_speed < 0:
+            lmotor_rotation = 2
+        elif lmotor_speed > 0:
+            lmotor_rotation = 1
+        else:
+            lmotor_rotation = 0
+
+        if rmotor_speed < 0:
+            rmotor_rotation = 2
+        elif rmotor_speed > 0:
+            rmotor_rotation = 1
+        else:
+    	    rmotor_rotation = 0
+
+        speed = bytes([abs(lmotor_speed), abs(rmotor_speed), lmotor_rotation, rmotor_rotation])
         super(DMotor, self).i2cDev_mem_write(0x01, speed)
 
         return 0

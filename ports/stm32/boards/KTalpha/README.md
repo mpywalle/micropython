@@ -78,10 +78,17 @@ fast version of the STM32F7.
 
 `method`:: ___Dmotor.set_speed(lmotor_speed, lmotor_rotation, rmotor_speed, rmotor_rotation)___
 >Set the speed and rotation of double motors. Return 0 as successful, otherwise error:
->> lmotor_speed:    range 0 ~ 100<br>
->> lmotor_rotation: 0: stop; 1: move forward; 2 move backward<br>
->> rmotor_speed:    range 0 ~ 100<br>
->> rmotor_rotation: 0: stop; 1: move forward; 2 move backward<br>
+>> lmotor_speed:    range 0 ~ 100, default 0 if less than 0 and default 100 if more than 100<br>
+>> lmotor_rotation: 0(default): stop; 1: move forward; 2 move backward<br>
+>> rmotor_speed:    range 0 ~ 100, default 0 if less than 0 and default 100 if more than 100<br>
+>> rmotor_rotation: 0(default): stop; 1: move forward; 2 move backward<br>
+
+`method`:: ___Dmotor.set_speed_v2(lmotor_speed, rmotor_speed)___
+>Set the speed and rotation of double motors. Return 0 as successful, otherwise error:
+>> lmotor_speed:    range -100 ~ 100, default -100 if less than -100 and default 100 if more than 100<br>
+>>                  0 ~ 100: move forward; -100 ~ 0: move backward<br>
+>> rmotor_speed:    range -100 ~ 100, default -100 if less than -100 and default 100 if more than 100<br>
+>>                  0 ~ 100: move forward; -100 ~ 0: move backward<br>
 
 ### LED module
 
