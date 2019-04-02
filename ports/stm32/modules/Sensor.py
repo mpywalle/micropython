@@ -9,11 +9,20 @@ class TP(i2cDev):
             self._TemperatureSensor_enable()
 
     def _TemperatureSensor_enable(self):
-        super(TP, self).i2cDev_mem_write(0x01, 1)
+        try:
+            super(TP, self).i2cDev_mem_write(0x01, 1)
+            return 0
+        except Exception as e:
+            print("Exception: %s" %e)
+            return -1
     
     def get_temp(self):
-        degree = super(TP, self).i2cDev_mem_read(0x20, 4)
-        return degree.strip()
+        try:
+            degree = super(TP, self).i2cDev_mem_read(0x20, 4)
+            return degree.strip()
+        except Exception as e:
+            print("Exception: %s" %e)
+            return -1
 
 #    def get_devID(self):
 #        deviceID = super(TP, self).i2cDev_mem_read(0x00, 4)
@@ -27,6 +36,10 @@ class Button(i2cDev):
             self.enable = True
 
     def get_status(self):
-        data = super(Button, self).i2cDev_mem_read(0x02, 2)
-        status = {'status': data[0], 'count': data[1]}
-        return status
+        try:
+            data = super(Button, self).i2cDev_mem_read(0x02, 2)
+            status = {'status': data[0], 'count': data[1]}
+            return status
+        except Exception as e:
+            print("Exception: %s" %e)
+            return -1
