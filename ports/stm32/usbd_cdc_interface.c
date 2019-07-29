@@ -62,13 +62,13 @@
 #define IDE_BAUDRATE_SLOW    (9600)
 #define IDE_BAUDRATE_FAST    (12000000)
 
-extern void usbdbg_data_in(void *buffer, int length);
+extern void usbdbg_data_in(void *buffer, int *length);
 extern void usbdbg_data_out(void *buffer, int length);
 extern void usbdbg_control(void *buffer, uint8_t brequest, uint32_t wlength);
 
 // Used to control the connect_state variable when USB host opens the serial port
 static uint8_t usbd_cdc_connect_tx_timer;
-static void send_packet(usbd_cdc_itf_t *cdc);
+static void send_packet(usbd_cdc_itf_t *cdc, int *length);
 
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
@@ -208,7 +208,9 @@ void usbd_cdc_tx_ready(usbd_cdc_state_t *cdc_in) {
 
 	if (cdc->dbg_mode_enabled == 1) {
 		if (cdc->dbg_xfer_length) {
-            send_packet(cdc);
+			int length;
+            send_packet(cdc, &length);
+			cdc->dbg_xfer_length -= length;
 			return;
         }
 	}
@@ -276,13 +278,18 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     }
 }
 
-static void send_packet(usbd_cdc_itf_t *cdc) {
-    int bytes = MIN(cdc->dbg_xfer_length, CDC_DATA_FS_MAX_PACKET_SIZE);
-    cdc->dbg_last_packet = bytes;
-    usbdbg_data_in(cdc->dbg_xfer_buffer, bytes);
-    cdc->dbg_xfer_length -= bytes;
-	trace_write("send_packet: xfer_len %ld.\r\n", bytes);
-    USBD_CDC_TransmitPacket(&cdc->base, bytes, cdc->dbg_xfer_buffer);
+static void send_packet(usbd_cdc_itf_t *cdc, int *length) {
+	int bytes;
+
+    usbdbg_data_in(cdc->dbg_xfer_buffer, &bytes);
+
+	bytes = MIN(bytes, CDC_DATA_FS_MAX_PACKET_SIZE);
+	*length = bytes;
+	if(bytes > 0){
+		cdc->dbg_last_packet = bytes;
+		trace_write("send_packet: xfer_len %ld.\r\n", bytes);
+		USBD_CDC_TransmitPacket(&cdc->base, bytes, cdc->dbg_xfer_buffer);
+	}
 }
 
 // Data received over USB OUT endpoint is processed here.
@@ -293,15 +300,22 @@ int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
 
     if (cdc->dbg_mode_enabled == 1) {
         trace_write("usbd_cdc_receive: xfer_len %ld, cmd 0x%x, req 0x%x data: %x,%x,%x,%x.\r\n", cdc->dbg_xfer_length, cdc->rx_packet_buf[0], cdc->rx_packet_buf[1], cdc->rx_packet_buf[2], cdc->rx_packet_buf[3], cdc->rx_packet_buf[4], cdc->rx_packet_buf[5]);
-        if (cdc->dbg_xfer_length) {   
+
+		if (cdc->dbg_xfer_length) {   
             usbdbg_data_out(cdc->rx_packet_buf, len);
             cdc->dbg_xfer_length -= len; 
-        } else if (cdc->rx_packet_buf[0] == '\x30') { // command
+			if (cdc->dbg_xfer_length == 0) { /* ack of receiving finished */
+				int length;
+				send_packet(cdc, &length); //prime tx buffer
+			}
+		}else if (cdc->rx_packet_buf[0] == '\x30') { // command
             uint8_t request = cdc->rx_packet_buf[1];
             cdc->dbg_xfer_length = *((uint32_t*)(cdc->rx_packet_buf+2));
             usbdbg_control(cdc->rx_packet_buf+6, request, cdc->dbg_xfer_length);
-            if (cdc->dbg_xfer_length && (request & 0x80)) { //request has a device-to-host data phase
-				send_packet(cdc); //prime tx buffer
+            if (request & 0x80) { //request has a device-to-host data phase
+				int length;
+				send_packet(cdc, &length); //prime tx buffer
+				cdc->dbg_xfer_length -= length;
  			}
         }
     } else {

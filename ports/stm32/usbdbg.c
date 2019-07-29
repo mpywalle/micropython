@@ -60,26 +60,41 @@ inline void usbdbg_set_irq_enabled(bool enabled)
     __DSB(); __ISB();
 }
 
-void usbdbg_data_in(void *buffer, int length)
+void usbdbg_data_in(void *buffer, int *length)
 {
     switch (cmd) {
-        case USBDBG_FW_VERSION: {
+        case USBDBG_FW_VERSION: {  /* length = 4 */
             uint8_t *ver_buf = buffer;
+			*length = 4;
             ver_buf[0] = FIRMWARE_VERSION_MAJOR;
             ver_buf[1] = FIRMWARE_VERSION_MINOR;
             ver_buf[2] = FIRMWARE_VERSION_PATCH;
+			ver_buf[3] = 0;
             cmd = USBDBG_NONE;
             break;
         }
 
-		case USBDBG_SCRIPT_RUNNING: {
-			uint32_t *buf = buffer;   
-            buf[0] = (uint32_t) script_running;
+		case USBDBG_SCRIPT_RUNNING: {  /* length = 6 */
+			uint8_t *ack = buffer;
+			*length = 4;
+			ack[0] = (uint32_t) script_running;
             cmd = USBDBG_NONE;        
             break;
         }
 
+		case USBDBG_SCRIPT_DOWNLOAD_ACK: {  /* length = 3 */
+			uint8_t *ack = buffer;
+			*length = 3;
+			ack[0] = 0x30;
+			ack[1] = USBDBG_SCRIPT_DOWNLOAD_ACK;
+			ack[2] = script_ready;
+			cmd = USBDBG_NONE;
+			break;
+		}
+
         default: /* error */
+			*length = 0;
+			cmd = USBDBG_NONE;
             break;
     }
 }
@@ -114,6 +129,7 @@ void usbdbg_data_out(void *buffer, int length)
 					}
 			        else
 			            trace_write("script file open failed.\r\n");
+					cmd = USBDBG_SCRIPT_DOWNLOAD_ACK;
 			    }
             }
 		}
@@ -129,8 +145,6 @@ void usbdbg_control(void *buffer, uint8_t request, uint32_t length)
 	trace_write("cmd from openmv: 0x%x.\r\n", cmd);
     switch (cmd) {
         case USBDBG_FW_VERSION:   
-            xfer_bytes = 0;           
-            xfer_length = length;     
             break;
 
 		case USBDBG_SCRIPT_STOP:
@@ -151,13 +165,12 @@ void usbdbg_control(void *buffer, uint8_t request, uint32_t length)
             break;
 
         case USBDBG_SCRIPT_RUNNING:
-            xfer_bytes = 0;
-            xfer_length =length;
             break;
 
         case USBDBG_SCRIPT_DOWNLOAD:
 			xfer_bytes = 0;
 			xfer_length = length;
+			script_ready = false;
 			vstr_reset(&script_buf);
             break;
         

@@ -36,7 +36,7 @@ enum usbdbg_cmd {
 	USBDBG_SCRIPT_RUNNING   =0x87,
     USBDBG_SYS_RESET        =0x0C,
     USBDBG_SCRIPT_DOWNLOAD  =0x0e,
-	USBDBG_SCRIPT_SAVE		=0x8f
+	USBDBG_SCRIPT_DOWNLOAD_ACK =0x8e,
 };
 void usbdbg_init();
 bool usbdbg_script_ready();
@@ -44,7 +44,7 @@ vstr_t *usbdbg_get_script();
 bool usbdbg_get_irq_enabled();
 void usbdbg_set_irq_enabled(bool enabled);
 void usbdbg_set_script_running(bool running);
-void usbdbg_data_in(void *buffer, int length);
+void usbdbg_data_in(void *buffer, int *length);
 void usbdbg_data_out(void *buffer, int length);
 void usbdbg_control(void *buffer, uint8_t brequest, uint32_t wlength);
 #endif /* __USBDBG_H__ */
